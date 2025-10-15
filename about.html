@@ -189,6 +189,7 @@
             .values-section {
               min-height: 100vh;
               overflow: clip;
+              position: relative; /* Add this to create a positioning context */
             }
             .values-left {
               position: sticky;
@@ -198,10 +199,12 @@
               align-items: center;
               justify-content: flex-end;
               padding-block: 6rem;
+              z-index: 10; /* Ensure it stays above other content */
             }
             .values-left h2 {
               font-weight: 800;
               letter-spacing: -0.5px;
+              position: fixed !important;
               line-height: 0.9;
               font-size: clamp(3rem, 8vw, 7rem);
               margin: 0;
@@ -209,17 +212,21 @@
             }
             .values-right {
               padding-block: 6rem;
+              position: relative; /* Add this */
+              z-index: 5; /* Lower than the sticky left column */
             }
             .values-list {
               list-style: none;
               padding: 0;
               margin: 0;
+              position: relative; /* Add this */
             }
             .values-list li {
               font-weight: 800;
               font-size: clamp(2rem, 5.2vw, 4rem);
               line-height: 1.1;
               margin-bottom: clamp(1.25rem, 3.2vw, 2rem);
+              position: relative; /* Add this */
             }
 
             @media (max-width: 991.98px) {
@@ -984,7 +991,18 @@
 
         function showOnly(index) {
           items.forEach((el, i) => {
-            gsap.to(el, { opacity: i === index ? 1 : 0, duration: 0.4 });
+            if (i === index) {
+              gsap.to(el, {
+                opacity: 1,
+                duration: 0.4,
+                color: "#000", // Ensure black color when active
+              });
+            } else {
+              gsap.to(el, {
+                opacity: 0,
+                duration: 0.4,
+              });
+            }
           });
         }
 
@@ -1003,6 +1021,7 @@
               trigger: "#lastValue",
               start: "bottom center",
               end: "bottom top",
+
               scrub: true,
               pin: true,
             },
