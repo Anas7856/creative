@@ -164,14 +164,11 @@
           </section>
           <section class="values-section container-fluid">
             <div class="row">
-              <!-- Left -->
               <div class="col-lg-5">
                 <div class="values-left pe-lg-5">
                   <h2>we're</h2>
                 </div>
               </div>
-
-              <!-- Right -->
               <div class="col-lg-7">
                 <div class="values-right ps-lg-5">
                   <ol class="values-list" id="valuesList">
@@ -189,7 +186,7 @@
             .values-section {
               min-height: 100vh;
               overflow: clip;
-              position: relative; /* Add this to create a positioning context */
+              position: relative;
             }
             .values-left {
               position: sticky;
@@ -199,7 +196,7 @@
               align-items: center;
               justify-content: flex-end;
               padding-block: 6rem;
-              z-index: 10; /* Ensure it stays above other content */
+              z-index: 10;
             }
             .values-left h2 {
               font-weight: 800;
@@ -212,21 +209,26 @@
             }
             .values-right {
               padding-block: 6rem;
-              position: relative; /* Add this */
-              z-index: 5; /* Lower than the sticky left column */
+              position: relative;
+              z-index: 5;
             }
             .values-list {
               list-style: none;
               padding: 0;
               margin: 0;
-              position: relative; /* Add this */
             }
             .values-list li {
               font-weight: 800;
               font-size: clamp(2rem, 5.2vw, 4rem);
               line-height: 1.1;
               margin-bottom: clamp(1.25rem, 3.2vw, 2rem);
-              position: relative; /* Add this */
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            .values-list li.active {
+              opacity: 1;
+              color: #000;
+              transform: translateY(0);
             }
 
             @media (max-width: 991.98px) {
@@ -238,6 +240,13 @@
               }
             }
           </style>
+          <section class="we-are-cw d-flex align-items-center">
+            <div class="image">
+              <h2 class="text-white display-4 text-center">
+                We are Creative Warehouse
+              </h2>
+            </div>
+          </section>
 
           <!-- ====== NEXT PANEL (gradient over hero) ====== -->
           <section class="we-are-cw d-flex align-items-center">
@@ -962,14 +971,54 @@
         });
       });
     </script>
+    <style>
+      .values-list li {
+        font-weight: 800;
+        font-size: clamp(2rem, 5.2vw, 4rem);
+        line-height: 1.1;
+        margin-bottom: clamp(1.25rem, 3.2vw, 2rem);
+        opacity: 0.3;
+        color: #999;
+        transform: translateY(30px);
+        transition: color 0.4s ease, opacity 0.4s ease;
+      }
+      .values-list li.active {
+        opacity: 1;
+        color: #000;
+        transform: translateY(0);
+      }
+    </style>
+
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
+      document.addEventListener("DOMContentLoaded", function () {
         gsap.registerPlugin(ScrollTrigger);
 
+        const valuesSection = document.querySelector(".values-section");
         const items = gsap.utils.toArray("#valuesList li");
+        const img = document.querySelector(".we-are-cw .image");
+        const heading = img.querySelector("h2");
 
-        // Fade-in/out one line at a time
+        // 🔹 Pin the entire section while we scroll through values
+        ScrollTrigger.create({
+          trigger: valuesSection,
+          start: "top top",
+          end: "+=" + items.length * window.innerHeight * 0.8,
+          pin: true,
+          scrub: true,
+        });
+
+        // 🔹 Loop through each list item and create a ScrollTrigger for it
         items.forEach((item, i) => {
+          // this is where your ScrollTrigger.create(...) block goes 👇
+          ScrollTrigger.create({
+            trigger: valuesSection,
+            start: () => "top+=" + i * window.innerHeight + " top",
+            end: () => "top+=" + (i + 1) * window.innerHeight + " top",
+            onEnter: () => setActive(i),
+            onEnterBack: () => setActive(i),
+          });
+
+          // optional: animate the fade/slide reveal for each item
           gsap.fromTo(
             item,
             { opacity: 0, y: 50 },
@@ -977,92 +1026,53 @@
               opacity: 1,
               y: 0,
               duration: 0.5,
+              ease: "power2.out",
               scrollTrigger: {
                 trigger: item,
-                start: "top center",
-                end: "bottom center",
+                start: "top 80%",
+                end: "bottom 70%",
                 scrub: true,
-                onEnter: () => showOnly(i),
-                onEnterBack: () => showOnly(i),
               },
             }
           );
         });
 
-        function showOnly(index) {
+        function setActive(index) {
           items.forEach((el, i) => {
-            if (i === index) {
-              gsap.to(el, {
-                opacity: 1,
-                duration: 0.4,
-                color: "#000", // Ensure black color when active
-              });
-            } else {
-              gsap.to(el, {
-                opacity: 0,
-                duration: 0.4,
-              });
-            }
+            el.classList.toggle("active", i === index);
           });
         }
 
-        // Image grows from center to full screen after last value
-        const img = document.querySelector(".we-are-cw .image");
-        const heading = img.querySelector("h2");
+        // 🔹 Reveal the "We are Creative Warehouse" section after the last value
+        gsap.to(img, {
+          opacity: 1,
+          scale: 1,
+          duration: 1,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: items[items.length - 1],
+            start: "bottom 80%",
+            end: "bottom 10%",
+            scrub: true,
+          },
+        });
 
-        gsap.fromTo(
-          img,
-          { scale: 0.2, opacity: 0 },
-          {
-            scale: 1,
-            opacity: 1,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: "#lastValue",
-              start: "bottom center",
-              end: "bottom top",
-
-              scrub: true,
-              pin: true,
-            },
-          }
-        );
-
-        // Heading fades in after the image fills the screen
-        gsap.fromTo(
-          heading,
-          { opacity: 0, y: 30 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 1,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: img,
-              start: "top center",
-              end: "bottom center",
-              scrub: true,
-            },
-          }
-        );
+        gsap.to(heading, {
+          opacity: 1,
+          y: 0,
+          duration: 1,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: img,
+            start: "center bottom",
+            end: "bottom top",
+            scrub: true,
+          },
+        });
       });
     </script>
 
     <style>
-      .values-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-      }
-      .values-list li {
-        opacity: 0;
-        font-weight: 800;
-        font-size: clamp(2rem, 5vw, 4rem);
-        line-height: 1.1;
-        text-align: left;
-        transform: translateY(30px);
-      }
-
       .we-are-cw {
         position: relative;
         height: 100vh;
